@@ -7,8 +7,10 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         urls = new ArrayList<>();
         names = new ArrayList<>();
         getContent();
+        playGame();
     }
 
     private void getContent() {
@@ -100,12 +103,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void playGame() {
-generateQuestion();
-DounloadImageTask task = new DounloadImageTask();
+        generateQuestion();
+        DounloadImageTask task = new DounloadImageTask();
         try {
             Bitmap bitmap = task.execute(urls.get(numberOfQustion)).get();
-            if (bitmap !=null){
+            if (bitmap != null) {
                 imageViewStar.setImageBitmap(bitmap);
+                for (int i = 0; i < buttons.size(); i++) {
+                    if (i == numberOfRightAnswer) {
+                        buttons.get(i).setText(names.get(numberOfQustion));
+                    } else {
+                        int wrongAnswer = generateWrongAnswer();
+                        buttons.get(i).setText(names.get(wrongAnswer));
+                    }
+                }
             }
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -116,9 +127,25 @@ DounloadImageTask task = new DounloadImageTask();
 
     // генерирует случайным образом вопрос
     private void generateQuestion() {
-    // генерируем номер вопроса от 0 до колличества элементов в массиве
-       numberOfQustion = (int) (Math.random() * names.size());
-       numberOfRightAnswer = (int) (Math.random() * buttons.size());
+        // генерируем номер вопроса от 0 до колличества элементов в массиве
+        numberOfQustion = (int) (Math.random() * names.size());
+        numberOfRightAnswer = (int) (Math.random() * buttons.size());
+    }
+
+    private int generateWrongAnswer() {
+        return (int) (Math.random() * names.size());
+    }
+
+    public void onClickAnswer(View view) {
+        Button button = (Button) view;
+        String tag = button.getTag().toString();
+        if (Integer.parseInt(tag) == numberOfRightAnswer){
+            Toast.makeText(this, "Верно!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Неверно, правильный ответ: " + names.get(numberOfQustion), Toast.LENGTH_SHORT).show();
+
+        }
+        playGame();
 
     }
 
